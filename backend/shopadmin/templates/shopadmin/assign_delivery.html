@@ -1,0 +1,103 @@
+{% extends "shopadmin/base.html" %} {% block content %}
+
+<div class="page-header">
+  <h1>🚚 Assign Delivery</h1>
+  <a
+    href="/shop-admin/orders/{{ order.order_number }}/"
+    class="btn btn-secondary"
+  >
+    ← Back to Order
+  </a>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto">
+  <div class="card-header">
+    <h2>Order: {{ order.order_number }}</h2>
+    <p style="color: #666; margin-top: 8px">
+      Customer: <strong>{{ order.full_name }}</strong> | Phone:
+      <strong>{{ order.phone }}</strong>
+    </p>
+    <p style="color: #666">Address: {{ order.address }}, {{ order.city }}</p>
+    <p style="color: #666">
+      Total: <strong style="color: #10b981">${{ order.grand_total }}</strong>
+    </p>
+  </div>
+
+  <form method="POST" style="padding: 24px">
+    {% csrf_token %}
+
+    <label style="display: block; margin-bottom: 8px; font-weight: 600">
+      Select Delivery Person:
+    </label>
+
+    <select
+      name="delivery_id"
+      required
+      style="
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        margin-bottom: 16px;
+      "
+    >
+      <option value="">-- Choose a Delivery Person --</option>
+      {% for d in delivery_persons %}
+      <option
+        value="{{ d.id }}"
+        {%
+        if
+        order.delivery_person
+        and
+        order.delivery_person.id=""
+        ="d.id"
+        %}selected{%
+        endif
+        %}
+      >
+        {{ d.full_name|default:d.email }} {% if d.phone_number %} - {{
+        d.phone_number }}{% endif %}
+      </option>
+      {% empty %}
+      <option value="" disabled>No delivery persons available</option>
+      {% endfor %}
+    </select>
+
+    {% if not delivery_persons %}
+    <div
+      style="
+        background: #fef3c7;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+      "
+    >
+      ⚠️ No delivery persons in your shop.
+      <a
+        href="/shop-admin/staff/add/"
+        style="color: #b45309; font-weight: bold"
+      >
+        Add a Delivery Person →
+      </a>
+    </div>
+    {% endif %}
+
+    <button
+      type="submit"
+      class="btn btn-primary"
+      {%
+      if
+      not
+      delivery_persons
+      %}disabled{%
+      endif
+      %}
+      style="width: 100%; padding: 14px"
+    >
+      ✅ Assign Delivery
+    </button>
+  </form>
+</div>
+
+{% endblock %}

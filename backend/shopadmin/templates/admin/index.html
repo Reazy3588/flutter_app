@@ -1,0 +1,226 @@
+{% comment %} {% extends "admin/base_site.html" %} {% load i18n static %} {%
+block content %}
+<div id="content-main">
+  <!-- Welcome Header -->
+  <div
+    style="
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    "
+  >
+    <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 8px">
+      🏪 Welcome to Your Shop Admin
+    </h1>
+    <p style="color: #666">
+      Manage your products, categories, orders, and shop theme from here.
+    </p>
+  </div>
+
+  <!-- Quick Actions -->
+  <div
+    style="
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    "
+  >
+    <h2 style="font-size: 18px; font-weight: bold; margin-bottom: 16px">
+      ⚡ Quick Actions
+    </h2>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap">
+      <a
+        href="{% url 'shop_admin:products_product_add' %}"
+        style="
+          padding: 12px 20px;
+          background: #1f6feb;
+          color: white;
+          border-radius: 8px;
+          text-decoration: none;
+          font-weight: 600;
+        "
+      >
+        + Add Product
+      </a>
+      <a
+        href="{% url 'shop_admin:products_category_add' %}"
+        style="
+          padding: 12px 20px;
+          background: #8b5cf6;
+          color: white;
+          border-radius: 8px;
+          text-decoration: none;
+          font-weight: 600;
+        "
+      >
+        + Add Category
+      </a>
+      <a
+        href="{% url 'shop_admin:products_order_changelist' %}"
+        style="
+          padding: 12px 20px;
+          background: #10b981;
+          color: white;
+          border-radius: 8px;
+          text-decoration: none;
+          font-weight: 600;
+        "
+      >
+        View Orders
+      </a>
+    </div>
+  </div>
+
+  <!-- Apps List -->
+  {% if app_list %} {% for app in app_list %}
+  <div
+    style="
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    "
+  >
+    <h2
+      style="
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 12px;
+        color: #1f6feb;
+      "
+    >
+      {{ app.name }}
+    </h2>
+    <table style="width: 100%">
+      {% for model in app.models %}
+      <tr style="border-bottom: 1px solid #f0f0f0">
+        <td style="padding: 12px 0">
+          {% if model.admin_url %}
+          <a
+            href="{{ model.admin_url }}"
+            style="text-decoration: none; color: #333; font-weight: 500"
+          >
+            {{ model.name }}
+          </a>
+          {% else %} {{ model.name }} {% endif %}
+        </td>
+        <td style="text-align: right; padding: 12px 0">
+          {% if model.add_url %}
+          <a
+            href="{{ model.add_url }}"
+            style="
+              color: #1f6feb;
+              text-decoration: none;
+              font-weight: bold;
+              margin-right: 12px;
+            "
+          >
+            + Add
+          </a>
+          {% endif %} {% if model.admin_url %}
+          <a
+            href="{{ model.admin_url }}"
+            style="color: #666; text-decoration: none"
+          >
+            View →
+          </a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endfor %} {% else %}
+  <p>You don't have permissions to view or modify anything yet.</p>
+  {% endif %}
+</div>
+{% endblock %} {% endcomment %} {% extends 'admin/base.html' %} {% load i18n
+unfold %} {% block title %} {% if subtitle %}{{ subtitle }} | {% endif %} {{
+title }} | {{ site_title|default:_('Django site admin') }} {% endblock %} {%
+block branding %} {% include "unfold/helpers/site_branding.html" %} {% endblock
+%} {% block content %} {% component "unfold/components/container.html" %} {#
+============ QUICK ACTIONS ============ #}
+<div class="flex flex-wrap gap-3 mb-6">
+  <a
+    href="{% url 'admin:products_product_add' %}"
+    class="px-4 py-2 rounded-md bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700"
+  >
+    + {% trans "Add Product" %}
+  </a>
+  <a
+    href="{% url 'admin:products_category_add' %}"
+    class="px-4 py-2 rounded-md bg-purple-600 text-white text-sm font-semibold hover:bg-purple-700"
+  >
+    + {% trans "Add Category" %}
+  </a>
+  <a
+    href="{% url 'admin:products_order_changelist' %}"
+    class="px-4 py-2 rounded-md bg-green-600 text-white text-sm font-semibold hover:bg-green-700"
+  >
+    {% trans "View Orders" %}
+  </a>
+  <a
+    href="{% url 'admin:shops_shop_changelist' %}"
+    class="px-4 py-2 rounded-md border border-base-200 dark:border-base-700 text-sm font-semibold"
+  >
+    {% trans "Manage Shops" %}
+  </a>
+</div>
+
+{# ============ KPI CARDS ============ #}
+<div class="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6 mb-6">
+  {% component "unfold/components/card.html" with title=_("Shops") icon="store"
+  %}
+  <p class="text-2xl font-bold">{{ kpi_total_shops }}</p>
+  {% endcomponent %} {% component "unfold/components/card.html" with
+  title=_("Products") icon="inventory_2" %}
+  <p class="text-2xl font-bold">{{ kpi_total_products }}</p>
+  {% endcomponent %} {% component "unfold/components/card.html" with
+  title=_("Orders") icon="shopping_bag" %}
+  <p class="text-2xl font-bold">{{ kpi_total_orders }}</p>
+  {% endcomponent %} {% component "unfold/components/card.html" with
+  title=_("Pending") icon="hourglass_empty" %}
+  <p class="text-2xl font-bold">{{ kpi_pending_orders }}</p>
+  {% endcomponent %} {% component "unfold/components/card.html" with
+  title=_("Customers") icon="group" %}
+  <p class="text-2xl font-bold">{{ kpi_total_customers }}</p>
+  {% endcomponent %} {% component "unfold/components/card.html" with
+  title=_("Revenue") icon="payments" %}
+  <p class="text-2xl font-bold">${{ kpi_total_revenue }}</p>
+  {% endcomponent %}
+</div>
+
+{# ============ CHARTS ============ #}
+<div class="grid grid-cols-1 gap-4 lg:grid-cols-3 mb-6">
+  <div class="lg:col-span-2">
+    {% component "unfold/components/card.html" with title=_("Revenue — last 14
+    days") %} {% component "unfold/components/chart/line.html" with
+    data=sales_chart_data height=280 %} {% endcomponent %} {% endcomponent %}
+  </div>
+  <div>
+    {% component "unfold/components/card.html" with title=_("Orders by status")
+    %} {% component "unfold/components/chart/bar.html" with
+    data=orders_status_data height=280 %} {% endcomponent %} {% endcomponent %}
+  </div>
+</div>
+
+{# ============ TABLES ============ #}
+<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 mb-6">
+  {% component "unfold/components/card.html" with title=_("Top selling
+  products") %} {% component "unfold/components/table.html" with
+  table=top_products_table card_included=1 striped=1 %} {% endcomponent %} {%
+  endcomponent %} {% component "unfold/components/card.html" with title=_("Top
+  shops by revenue") %} {% component "unfold/components/table.html" with
+  table=top_shops_table card_included=1 striped=1 %} {% endcomponent %} {%
+  endcomponent %}
+</div>
+
+{% component "unfold/components/card.html" with title=_("Recent orders") %} {%
+component "unfold/components/table.html" with table=recent_orders_table
+card_included=1 striped=1 %} {% endcomponent %} {% endcomponent %} {%
+endcomponent %} {% endblock %}

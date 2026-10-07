@@ -1,0 +1,143 @@
+{% extends "shopadmin/base.html" %} {% block content %}
+<div class="form-card">
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label>Product Name *</label>
+      <input
+        type="text"
+        name="name"
+        required
+        value="{{ product.name|default:'' }}"
+      />
+    </div>
+
+    <div class="form-group">
+      <label>Category *</label>
+      <select name="category" required>
+        <option value="">-- Select Category --</option>
+        {% for cat in categories %}
+        <option
+          value="{{ cat.pk }}"
+          {%
+          if
+          product.category_id=""
+          ="cat.pk"
+          %}selected{%
+          endif
+          %}
+        >
+          {{ cat.name }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Description</label>
+      <textarea name="description">
+{{ product.description|default:'' }}</textarea
+      >
+    </div>
+
+    <div class="form-group">
+      <label>Price *</label>
+      <input
+        type="number"
+        name="price"
+        step="0.01"
+        required
+        value="{{ product.price|default:'' }}"
+      />
+    </div>
+
+    <div class="form-group">
+      <label>Discount Price (Optional)</label>
+      <input
+        type="number"
+        name="discount_price"
+        step="0.01"
+        value="{{ product.discount_price|default:'' }}"
+      />
+    </div>
+
+    <div class="form-group">
+      <label>Stock *</label>
+      <input
+        type="number"
+        name="stock"
+        required
+        value="{{ product.stock|default:'0' }}"
+      />
+    </div>
+
+    <div class="form-group">
+      <label>Image</label>
+      <input type="file" name="image" accept="image/*" />
+      {% if product.image %}
+      <img
+        src="{{ product.image.url }}"
+        style="margin-top: 12px; width: 120px; border-radius: 8px"
+      />
+      {% endif %}
+    </div>
+
+    <div class="form-group">
+      <div class="checkbox-group">
+        <input
+          type="checkbox"
+          name="is_new_arrival"
+          id="new"
+          {%
+          if
+          product.is_new_arrival
+          %}checked{%
+          endif
+          %}
+        />
+        <label for="new">New Arrival</label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="checkbox-group">
+        <input
+          type="checkbox"
+          name="is_best_seller"
+          id="best"
+          {%
+          if
+          product.is_best_seller
+          %}checked{%
+          endif
+          %}
+        />
+        <label for="best">Best Seller</label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="checkbox-group">
+        <input
+          type="checkbox"
+          name="is_recommended"
+          id="rec"
+          {%
+          if
+          product.is_recommended
+          %}checked{%
+          endif
+          %}
+        />
+        <label for="rec">Recommended</label>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 12px; margin-top: 32px">
+      <button type="submit" class="btn btn-primary">💾 Save</button>
+      <a href="/shop-admin/products/" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "shopadmin/base.html" %} {% block content %}
+<div class="stats-grid">
+  <div class="stat-card blue">
+    <div class="stat-icon">📦</div>
+    <div>
+      <div class="stat-label">Products</div>
+      <div class="stat-value">{{ total_products }}</div>
+    </div>
+  </div>
+  <div class="stat-card purple">
+    <div class="stat-icon">📂</div>
+    <div>
+      <div class="stat-label">Categories</div>
+      <div class="stat-value">{{ total_categories }}</div>
+    </div>
+  </div>
+  <div class="stat-card orange">
+    <div class="stat-icon">🛒</div>
+    <div>
+      <div class="stat-label">Total Orders</div>
+      <div class="stat-value">{{ total_orders }}</div>
+    </div>
+  </div>
+  <div class="stat-card green">
+    <div class="stat-icon">💰</div>
+    <div>
+      <div class="stat-label">Revenue</div>
+      <div class="stat-value">${{ total_revenue }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="page-header">
+  <h1>Recent Orders</h1>
+  <a href="/shop-admin/products/add/" class="btn btn-primary">➕ Add Product</a>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Order #</th>
+        <th>Customer</th>
+        <th>Status</th>
+        <th>Total</th>
+        <th>Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in recent_orders %}
+      <tr>
+        <td><strong>{{ order.order_number }}</strong></td>
+        <td>{{ order.full_name }}</td>
+        <td>
+          <span class="badge badge-{{ order.status }}">{{ order.status }}</span>
+        </td>
+        <td><strong>${{ order.grand_total }}</strong></td>
+        <td>{{ order.created_at|date:"M d, Y" }}</td>
+        <td>
+          <a
+            href="/shop-admin/orders/{{ order.order_number }}/"
+            class="btn-edit"
+            >View</a
+          >
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" class="empty-state">
+          <div class="icon">📭</div>
+          <p>No orders yet</p>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

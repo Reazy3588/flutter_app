@@ -1,0 +1,72 @@
+{% extends "shopadmin/base.html" %} {% block content %}
+<div class="form-card">
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label>Banner Image * (recommended 1200 × 500 px)</label>
+      <input type="file" name="image" accept="image/*" {% if not banner %}required{% endif %} />
+      {% if banner and banner.image %}
+      <img
+        src="{{ banner.image.url }}"
+        style="margin-top: 12px; width: 280px; border-radius: 10px"
+      />
+      {% endif %}
+    </div>
+
+    <div class="form-group">
+      <label>Title (optional — ទុកទំនេរ បើរូបមានអក្សររួចហើយ)</label>
+      <input type="text" name="title" maxlength="120" value="{{ banner.title|default:'' }}" />
+    </div>
+
+    <div class="form-group">
+      <label>Subtitle</label>
+      <input type="text" name="subtitle" maxlength="160" value="{{ banner.subtitle|default:'' }}" />
+    </div>
+
+    <div class="form-group">
+      <label>Badge text (e.g. "Best Seller!")</label>
+      <input type="text" name="badge_text" maxlength="40" value="{{ banner.badge_text|default:'' }}" />
+    </div>
+
+    <div class="form-group">
+      <label>Button text</label>
+      <input type="text" name="button_text" maxlength="40" value="{{ banner.button_text|default:'Shop Now' }}" />
+    </div>
+
+    <div class="form-group">
+      <label>When tapped, open…</label>
+      <select name="link">
+        <option value="" {% if not current_link %}selected{% endif %}>Shop (all products)</option>
+        <optgroup label="Category">
+          {% for c in categories %}
+          <option value="category:{{ c.slug }}" {% if current_link == 'category:'|add:c.slug %}selected{% endif %}>{{ c.name }}</option>
+          {% endfor %}
+        </optgroup>
+        <optgroup label="Product">
+          {% for p in products %}
+          <option value="product:{{ p.slug }}" {% if current_link == 'product:'|add:p.slug %}selected{% endif %}>{{ p.name }}</option>
+          {% endfor %}
+        </optgroup>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Sort order (តូច = បង្ហាញមុន)</label>
+      <input type="number" name="sort_order" min="0" value="{{ banner.sort_order|default:0 }}" />
+    </div>
+
+    <div class="form-group">
+      <div class="checkbox-group">
+        <input type="checkbox" name="is_active" id="active" {% if banner.is_active or not banner %}checked{% endif %} />
+        <label for="active">Active</label>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 12px; margin-top: 32px">
+      <button type="submit" class="btn btn-primary">💾 Save</button>
+      <a href="/shop-admin/banners/" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

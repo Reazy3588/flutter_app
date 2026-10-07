@@ -1,0 +1,91 @@
+{% extends "shopadmin/base.html" %} {% block content %}
+<div class="page-header">
+  <h1>📦 Products ({{ products.count }})</h1>
+  <a href="/shop-admin/products/add/" class="btn btn-primary">➕ Add Product</a>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Image</th>
+        <th>Name</th>
+        <th>Category</th>
+        <th>Price</th>
+        <th>Stock</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for product in products %}
+      <tr>
+        <td>
+          {% if product.image %}
+          <img
+            src="{{ product.image.url }}"
+            style="
+              width: 50px;
+              height: 50px;
+              border-radius: 8px;
+              object-fit: cover;
+            "
+          />
+          {% else %}
+          <div
+            style="
+              width: 50px;
+              height: 50px;
+              background: #f3f4f6;
+              border-radius: 8px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            📦
+          </div>
+          {% endif %}
+        </td>
+        <td><strong>{{ product.name }}</strong></td>
+        <td>{{ product.category.name }}</td>
+        <td><strong>${{ product.price }}</strong></td>
+        <td>{{ product.stock }}</td>
+        <td>
+          {% if product.is_active %}
+          <span class="badge badge-active">Active</span>
+          {% else %}
+          <span class="badge badge-inactive">Inactive</span>
+          {% endif %}
+        </td>
+        <td>
+          <div class="action-btns">
+            <a
+              href="/shop-admin/products/{{ product.pk }}/edit/"
+              class="btn-edit"
+              >Edit</a
+            >
+            <a
+              href="/shop-admin/products/{{ product.pk }}/delete/"
+              class="btn-delete"
+              onclick="return confirm('Are you sure?');"
+              >Delete</a
+            >
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="empty-state">
+          <div class="icon">📦</div>
+          <p>
+            No products yet.
+            <a href="/shop-admin/products/add/">Add your first product</a>
+          </p>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "shopadmin/base.html" %} {% block content %}
+<div class="page-header">
+  <h1>🛒 Orders ({{ orders.count }})</h1>
+  <div>
+    <a
+      href="/shop-admin/orders/"
+      class="btn {% if not status_filter %}btn-primary{% else %}btn-secondary{% endif %}"
+      >All</a
+    >
+    <a
+      href="/shop-admin/orders/?status=pending"
+      class="btn {% if status_filter == 'pending' %}btn-primary{% else %}btn-secondary{% endif %}"
+      >Pending</a
+    >
+    <a
+      href="/shop-admin/orders/?status=shipped"
+      class="btn {% if status_filter == 'shipped' %}btn-primary{% else %}btn-secondary{% endif %}"
+      >Shipped</a
+    >
+    <a
+      href="/shop-admin/orders/?status=delivered"
+      class="btn {% if status_filter == 'delivered' %}btn-primary{% else %}btn-secondary{% endif %}"
+      >Delivered</a
+    >
+  </div>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Order #</th>
+        <th>Customer</th>
+        <th>Status</th>
+        <th>Delivery</th>
+        <th>Total</th>
+        <th>Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+      <tr>
+        <td><strong>{{ order.order_number }}</strong></td>
+        <td>{{ order.full_name }}</td>
+        <td>
+          <span class="badge badge-{{ order.status }}">{{ order.status }}</span>
+        </td>
+        <td>
+          {% if order.delivery_person %}
+          <span style="color: #10b981; font-weight: 600">
+            {{ order.delivery_person.full_name|default:order.delivery_person.email }}
+          </span>
+          {% else %}
+          <a
+            href="/shop-admin/orders/{{ order.order_number }}/assign/"
+            style="color: #f59e0b; font-weight: 600"
+          >
+            + Assign
+          </a>
+          {% endif %}
+        </td>
+        <td><strong>${{ order.grand_total }}</strong></td>
+        <td>{{ order.created_at|date:"M d, Y" }}</td>
+        <td>
+          <a
+            href="/shop-admin/orders/{{ order.order_number }}/"
+            class="btn-edit"
+          >
+            View
+          </a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="empty-state">No orders yet</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

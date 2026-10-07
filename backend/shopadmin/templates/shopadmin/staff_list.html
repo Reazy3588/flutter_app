@@ -1,0 +1,59 @@
+{% extends "shopadmin/base.html" %} {% block content %}
+<div class="page-header">
+  <h1>👥 Staff & Delivery</h1>
+  <a href="/shop-admin/staff/add/" class="btn btn-primary">+ Add Staff</a>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for staff in staffs %}
+      <tr>
+        <td>{{ staff.full_name }}</td>
+        <td>{{ staff.email }}</td>
+        <td>{{ staff.phone_number }}</td>
+        <td>
+          <span class="badge badge-{{ staff.role }}">
+            {{ staff.get_role_display }}
+          </span>
+        </td>
+        <td>
+          {% if staff.is_active %}
+          <span class="badge badge-active">Active</span>
+          {% else %}
+          <span class="badge badge-inactive">Inactive</span>
+          {% endif %}
+        </td>
+        <td>
+          <div class="action-btns">
+            <a href="/shop-admin/staff/{{ staff.pk }}/edit/" class="btn-edit"
+              >Edit</a
+            >
+            <a
+              href="/shop-admin/staff/{{ staff.pk }}/delete/"
+              class="btn-delete"
+              onclick="return confirm('Delete this staff?');"
+              >Delete</a
+            >
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" class="empty-state">No staff yet</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

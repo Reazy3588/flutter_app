@@ -1,0 +1,474 @@
+{% extends "admin/base_site.html" %}
+{% load i18n unfold %}
+
+{% block content %}
+
+<style>
+  .dashboard-page { min-height: calc(100vh - 70px); }
+  .dashboard-card { transition: all 0.2s ease; }
+  .dashboard-card:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); }
+  .mini-chart { height: 45px; display: flex; align-items: end; gap: 4px; }
+  .mini-chart span { display: block; width: 6px; border-radius: 5px 5px 0 0; background: currentColor; opacity: 0.7; }
+  .status-ring { width: 150px; height: 150px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; }
+  .status-ring::after { content: ""; position: absolute; width: 92px; height: 92px; background: white; border-radius: 50%; }
+  .dark .status-ring::after { background: #1f2937; }
+  .status-ring-content { position: relative; z-index: 2; text-align: center; }
+  .sales-line { fill: none; stroke: #2563eb; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .sales-area { fill: url(#salesGradient); }
+  .table-row { transition: background 0.15s ease; }
+  .table-row:hover { background: rgba(59, 130, 246, 0.04); }
+  .product-image { width: 42px; height: 42px; object-fit: cover; border-radius: 10px; }
+  .avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+</style>
+
+<div class="dashboard-page bg-gray-50 dark:bg-gray-950">
+
+  <!-- ========================================================= -->
+  <!-- TOP HEADER -->
+  <!-- ========================================================= -->
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+    <div>
+      <div class="flex items-center gap-2">
+        <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
+          {% trans "Welcome back, Admin!" %}
+        </h1>
+        <span class="text-2xl">👋</span>
+      </div>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        {% trans "Here's what's happening with your store today." %}
+      </p>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <!-- SHOP SELECTOR DROPDOWN -->
+      {% if all_shops %}
+      <form method="get" class="flex items-center gap-2">
+        <div class="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 shadow-sm">
+          <span class="material-symbols-outlined text-gray-500">store</span>
+          <select
+            name="shop"
+            onchange="this.form.submit()"
+            class="bg-transparent border-none outline-none text-sm font-medium text-gray-700 dark:text-gray-200 cursor-pointer"
+          >
+            {% for shop in all_shops %}
+            <option value="{{ shop.id }}" {% if shop.id == selected_shop_id %}selected{% endif %}>{{ shop.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </form>
+      {% endif %}
+
+      <!-- Date -->
+      <div class="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 shadow-sm">
+        <span class="material-symbols-outlined text-gray-500">calendar_month</span>
+        <span class="text-sm font-medium text-gray-700 dark:text-gray-200">
+          {% now "M d, Y" %}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEWING SHOP INFO -->
+  {% if selected_shop %}
+  <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-blue-600">store</span>
+      <span class="text-sm text-blue-700 dark:text-blue-300">
+        Viewing: <strong>{{ selected_shop.name }}</strong>
+      </span>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ========================================================= -->
+  <!-- STATISTICS CARDS -->
+  <!-- ========================================================= -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
+
+    <!-- PRODUCTS -->
+    <div class="dashboard-card bg-white dark:bg-gray-800 rounded-2xl border border-blue-100 dark:border-gray-700 p-5 shadow-sm">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{% trans "Total Products" %}</p>
+          <h2 class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{{ total_products }}</h2>
+          <div class="flex items-center gap-1 mt-2 text-xs">
+            <span class="text-green-600 font-semibold">↑ 12%</span>
+            <span class="text-gray-400">{% trans "vs last week" %}</span>
+          </div>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+          <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">inventory_2</span>
+        </div>
+      </div>
+      <div class="mini-chart text-blue-500 mt-4">
+        <span style="height: 25%"></span>
+        <span style="height: 40%"></span>
+        <span style="height: 32%"></span>
+        <span style="height: 55%"></span>
+        <span style="height: 48%"></span>
+        <span style="height: 70%"></span>
+        <span style="height: 60%"></span>
+        <span style="height: 90%"></span>
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="dashboard-card bg-white dark:bg-gray-800 rounded-2xl border border-green-100 dark:border-gray-700 p-5 shadow-sm">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{% trans "Total Orders" %}</p>
+          <h2 class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{{ total_orders }}</h2>
+          <div class="flex items-center gap-1 mt-2 text-xs">
+            <span class="text-green-600 font-semibold">↑ 40%</span>
+            <span class="text-gray-400">{% trans "vs last week" %}</span>
+          </div>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/40 flex items-center justify-center">
+          <span class="material-symbols-outlined text-green-600 dark:text-green-400">shopping_bag</span>
+        </div>
+      </div>
+      <div class="mini-chart text-green-500 mt-4">
+        <span style="height: 20%"></span>
+        <span style="height: 35%"></span>
+        <span style="height: 30%"></span>
+        <span style="height: 50%"></span>
+        <span style="height: 42%"></span>
+        <span style="height: 65%"></span>
+        <span style="height: 58%"></span>
+        <span style="height: 82%"></span>
+      </div>
+    </div>
+
+    <!-- REVENUE -->
+    <div class="dashboard-card bg-white dark:bg-gray-800 rounded-2xl border border-purple-100 dark:border-gray-700 p-5 shadow-sm">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{% trans "Total Revenue" %}</p>
+          <h2 class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">${{ total_revenue|floatformat:2 }}</h2>
+          <div class="flex items-center gap-1 mt-2 text-xs">
+            <span class="text-green-600 font-semibold">↑ 65%</span>
+            <span class="text-gray-400">{% trans "vs last week" %}</span>
+          </div>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
+          <span class="material-symbols-outlined text-purple-600 dark:text-purple-400">payments</span>
+        </div>
+      </div>
+      <div class="mini-chart text-purple-500 mt-4">
+        <span style="height: 25%"></span>
+        <span style="height: 30%"></span>
+        <span style="height: 45%"></span>
+        <span style="height: 35%"></span>
+        <span style="height: 55%"></span>
+        <span style="height: 70%"></span>
+        <span style="height: 62%"></span>
+        <span style="height: 90%"></span>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="dashboard-card bg-white dark:bg-gray-800 rounded-2xl border border-orange-100 dark:border-gray-700 p-5 shadow-sm">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{% trans "Customers" %}</p>
+          <h2 class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{{ total_users }}</h2>
+          <div class="flex items-center gap-1 mt-2 text-xs">
+            <span class="text-green-600 font-semibold">↑ 33%</span>
+            <span class="text-gray-400">{% trans "vs last week" %}</span>
+          </div>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center">
+          <span class="material-symbols-outlined text-orange-600 dark:text-orange-400">group</span>
+        </div>
+      </div>
+      <div class="mini-chart text-orange-500 mt-4">
+        <span style="height: 30%"></span>
+        <span style="height: 45%"></span>
+        <span style="height: 38%"></span>
+        <span style="height: 60%"></span>
+        <span style="height: 52%"></span>
+        <span style="height: 75%"></span>
+        <span style="height: 65%"></span>
+        <span style="height: 92%"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- SALES + ORDER STATUS -->
+  <!-- ========================================================= -->
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-6">
+
+    <!-- SALES OVERVIEW -->
+    <div class="xl:col-span-2 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+      <div class="p-5 border-b border-gray-100 dark:border-gray-700">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white">{% trans "Sales Overview" %}</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{% trans "Revenue for recent orders" %}</p>
+          </div>
+          <button class="flex items-center gap-1 px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-300">
+            7 Days
+            <span class="material-symbols-outlined text-sm">expand_more</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="p-5">
+        <div class="relative h-64">
+          <div class="absolute inset-0 flex flex-col justify-between">
+            <div class="border-t border-gray-100 dark:border-gray-700"></div>
+            <div class="border-t border-gray-100 dark:border-gray-700"></div>
+            <div class="border-t border-gray-100 dark:border-gray-700"></div>
+            <div class="border-t border-gray-100 dark:border-gray-700"></div>
+            <div class="border-t border-gray-100 dark:border-gray-700"></div>
+          </div>
+
+          <svg viewBox="0 0 800 250" preserveAspectRatio="none" class="absolute inset-0 w-full h-full">
+            <defs>
+              <linearGradient id="salesGradient" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="#2563eb" stop-opacity="0.25" />
+                <stop offset="100%" stop-color="#2563eb" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+
+            <path class="sales-area" d="M0,190 C80,180 100,160 160,170 C220,180 250,120 320,130 C390,140 420,170 480,145 C550,115 570,150 630,125 C690,100 730,115 800,60 L800,250 L0,250 Z" />
+            <path class="sales-line" d="M0,190 C80,180 100,160 160,170 C220,180 250,120 320,130 C390,140 420,170 480,145 C550,115 570,150 630,125 C690,100 730,115 800,60" />
+
+            <circle cx="0" cy="190" r="5" fill="#2563eb" />
+            <circle cx="160" cy="170" r="5" fill="#2563eb" />
+            <circle cx="320" cy="130" r="5" fill="#2563eb" />
+            <circle cx="480" cy="145" r="5" fill="#2563eb" />
+            <circle cx="630" cy="125" r="5" fill="#2563eb" />
+            <circle cx="800" cy="60" r="5" fill="#2563eb" />
+          </svg>
+        </div>
+
+        <div class="grid grid-cols-6 text-xs text-gray-400 mt-2">
+          <span>Sep 18</span>
+          <span>Sep 19</span>
+          <span>Sep 20</span>
+          <span>Sep 21</span>
+          <span>Sep 22</span>
+          <span class="text-right">Sep 23</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDER STATUS -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+      <div class="p-5 border-b border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white">{% trans "Order Status" %}</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{% trans "Overview of all orders" %}</p>
+      </div>
+
+      <div class="p-6">
+        <div class="flex flex-col sm:flex-row xl:flex-col 2xl:flex-row items-center gap-7">
+          <div
+            id="orderStatusRing"
+            class="status-ring shrink-0"
+            style="background: conic-gradient(#10b981 0deg, #10b981 180deg, #f59e0b 180deg, #f59e0b 240deg, #ef4444 240deg, #ef4444 360deg);"
+          >
+            <div class="status-ring-content">
+              <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_orders }}</div>
+              <div class="text-xs text-gray-400">{% trans "Total Orders" %}</div>
+            </div>
+          </div>
+
+          <div class="space-y-5 w-full">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                <span class="text-sm text-gray-600 dark:text-gray-300">{% trans "Completed" %}</span>
+              </div>
+              <span class="font-bold text-gray-900 dark:text-white">{{ completed_orders }}</span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
+                <span class="text-sm text-gray-600 dark:text-gray-300">{% trans "Pending" %}</span>
+              </div>
+              <span class="font-bold text-gray-900 dark:text-white">{{ pending_orders }}</span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                <span class="text-sm text-gray-600 dark:text-gray-300">{% trans "Cancelled" %}</span>
+              </div>
+              <span class="font-bold text-gray-900 dark:text-white">{{ cancelled_orders }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- RECENT ORDERS + TOP PRODUCTS -->
+  <!-- ========================================================= -->
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-6">
+
+    <!-- RECENT ORDERS -->
+    <div class="xl:col-span-2 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+      <div class="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-bold text-gray-900 dark:text-white">{% trans "Recent Orders" %}</h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{% trans "Latest orders from your customers" %}</p>
+        </div>
+        <a href="{% url 'admin:products_order_changelist' %}" class="text-sm font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+          {% trans "View all" %}
+          <span class="material-symbols-outlined text-sm">arrow_forward</span>
+        </a>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-gray-50 dark:bg-gray-900/50">
+              <th class="px-5 py-3 text-left font-semibold text-gray-500">{% trans "Order" %}</th>
+              <th class="px-5 py-3 text-left font-semibold text-gray-500">{% trans "Customer" %}</th>
+              <th class="px-5 py-3 text-left font-semibold text-gray-500">{% trans "Status" %}</th>
+              <th class="px-5 py-3 text-right font-semibold text-gray-500">{% trans "Total" %}</th>
+              <th class="px-5 py-3"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in recent_orders %}
+            <tr class="table-row border-t border-gray-100 dark:border-gray-700">
+              <td class="px-5 py-4">
+                <span class="font-mono text-xs font-semibold text-gray-700 dark:text-gray-200">#{{ order.order_number }}</span>
+              </td>
+              <td class="px-5 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="avatar bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+                    {{ order.full_name|default:"U"|slice:":1"|upper }}
+                  </div>
+                  <div>
+                    <div class="font-medium text-gray-800 dark:text-gray-200">
+                      {{ order.full_name|default:"Unknown Customer" }}
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-5 py-4">
+                {% if order.status == "delivered" or order.status == "completed" %}
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                  <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                  {% trans "DELIVERED" %}
+                </span>
+                {% elif order.status == "cancelled" %}
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                  <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                  {% trans "CANCELLED" %}
+                </span>
+                {% else %}
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+                  <span class="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
+                  {{ order.status|upper }}
+                </span>
+                {% endif %}
+              </td>
+              <td class="px-5 py-4 text-right">
+                <span class="font-semibold text-gray-800 dark:text-gray-200">${{ order.grand_total|floatformat:2 }}</span>
+              </td>
+              <td class="px-5 py-4 text-right">
+                <span class="material-symbols-outlined text-gray-400 text-lg">more_vert</span>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="px-5 py-10 text-center">
+                <span class="material-symbols-outlined text-4xl text-gray-300">shopping_cart</span>
+                <p class="mt-2 text-gray-500">{% trans "No orders yet" %}</p>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TOP PRODUCTS -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+      <div class="p-5 border-b border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white">{% trans "Top Selling Products" %}</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{% trans "Best performing products" %}</p>
+      </div>
+
+      <div class="p-2">
+        {% for p in top_products %}
+        <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50">
+          {% if p.image %}
+          <img src="{{ p.image.url }}" class="product-image border border-gray-200 dark:border-gray-700" alt="{{ p.name }}" />
+          {% else %}
+          <div class="product-image bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+            <span class="material-symbols-outlined text-gray-400">image</span>
+          </div>
+          {% endif %}
+
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-sm text-gray-800 dark:text-gray-200 truncate">{{ p.name }}</p>
+            <p class="text-xs text-gray-400 mt-1">{{ p.sold_count }} {% trans "sold" %}</p>
+          </div>
+
+          <div class="min-w-8 h-8 px-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm font-bold">
+            {{ p.sold_count }}
+          </div>
+
+          <span class="material-symbols-outlined text-gray-400 text-lg">chevron_right</span>
+        </div>
+        {% empty %}
+        <div class="p-8 text-center">
+          <span class="material-symbols-outlined text-4xl text-gray-300">inventory_2</span>
+          <p class="mt-2 text-gray-500">{% trans "No products yet" %}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- FOOTER -->
+  <!-- ========================================================= -->
+  <div class="flex flex-col sm:flex-row items-center justify-between gap-2 py-6">
+    <p class="text-xs text-gray-400">E-Commerce Admin Dashboard</p>
+    <p class="text-xs text-gray-400">{% now "Y" %} © All rights reserved.</p>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- ORDER STATUS DONUT CALCULATION -->
+<!-- ========================================================= -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const ring = document.getElementById("orderStatusRing");
+    if (!ring) return;
+
+    const completed = Number("{{ completed_orders|default:0 }}");
+    const pending = Number("{{ pending_orders|default:0 }}");
+    const cancelled = Number("{{ cancelled_orders|default:0 }}");
+
+    const total = completed + pending + cancelled;
+
+    if (total <= 0) {
+      ring.style.background = "#e5e7eb";
+      return;
+    }
+
+    const completedDeg = (completed / total) * 360;
+    const pendingDeg = (pending / total) * 360;
+
+    const pendingStart = completedDeg;
+    const pendingEnd = completedDeg + pendingDeg;
+
+    ring.style.background = `conic-gradient(
+      #10b981 0deg ${completedDeg}deg,
+      #f59e0b ${pendingStart}deg ${pendingEnd}deg,
+      #ef4444 ${pendingEnd}deg 360deg
+    )`;
+  });
+</script>
+
+{% endblock %}

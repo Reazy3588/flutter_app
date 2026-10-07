@@ -1,0 +1,71 @@
+name: ecommerce_app
+description: E-Commerce mobile app (Flutter) with Django REST Framework backend.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  flutter_map: ^6.1.0 # ជំនួស ^7.0.2
+  latlong2: ^0.9.1
+  google_sign_in: ^6.1.5
+
+  # ✅ Google Maps
+  # google_maps_flutter: ^2.5.3
+
+  flutter_map_cancellable_tile_provider: ^2.0.0
+
+  # ✅ HTTP សម្រាប់ Directions API
+  http: ^1.1.0
+
+  # ✅ សម្រាប់ Geocoding (បំលែង Address → GPS)
+  geocoding:
+    ^3.0.0
+
+    # ✅ សម្រាប់ Voice Recording
+  record: ^5.0.0
+
+  # ✅ សម្រាប់ Play Voice
+  just_audio: ^0.9.36
+
+  # ✅ សម្រាប់ Permission
+  permission_handler: ^11.0.0
+
+  # ✅ សម្រាប់ File Path
+  path_provider: ^2.1.2
+
+  # Networking
+  dio: ^5.4.0
+
+  # Local storage (save JWT tokens)
+  shared_preferences: ^2.2.2
+
+  # OTP input boxes UI
+  pin_code_fields: ^8.0.1
+
+  # Simple state management
+  provider: ^6.1.1
+  flutter_svg: ^2.0.10+1
+
+  # Pick a photo from gallery/camera for Profile Photo edit
+  image_picker: ^1.0.7
+  geolocator: ^11.1.0
+
+  qr_flutter: ^4.1.0
+
+  url_launcher: ^6.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/icons/

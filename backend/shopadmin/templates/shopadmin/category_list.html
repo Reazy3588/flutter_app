@@ -1,0 +1,63 @@
+{% extends "shopadmin/base.html" %} {% block content %}
+<div class="page-header">
+  <h1>📂 Categories ({{ categories.count }})</h1>
+  <a href="/shop-admin/categories/add/" class="btn btn-primary"
+    >➕ Add Category</a
+  >
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Slug</th>
+        <th>Status</th>
+        <th>Created</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for category in categories %}
+      <tr>
+        <td><strong>{{ category.name }}</strong></td>
+        <td>{{ category.slug }}</td>
+        <td>
+          {% if category.is_active %}
+          <span class="badge badge-active">Active</span>
+          {% else %}
+          <span class="badge badge-inactive">Inactive</span>
+          {% endif %}
+        </td>
+        <td>{{ category.created_at|date:"M d, Y" }}</td>
+        <td>
+          <div class="action-btns">
+            <a
+              href="/shop-admin/categories/{{ category.pk }}/edit/"
+              class="btn-edit"
+              >Edit</a
+            >
+            <a
+              href="/shop-admin/categories/{{ category.pk }}/delete/"
+              class="btn-delete"
+              onclick="return confirm('Are you sure?');"
+              >Delete</a
+            >
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" class="empty-state">
+          <div class="icon">📂</div>
+          <p>
+            No categories yet.
+            <a href="/shop-admin/categories/add/">Add your first category</a>
+          </p>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

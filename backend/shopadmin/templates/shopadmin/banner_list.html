@@ -1,0 +1,66 @@
+{% extends "shopadmin/base.html" %} {% block content %}
+<div class="page-header">
+  <h1>🖼️ Banners ({{ banners.count }})</h1>
+  <a href="/shop-admin/banners/add/" class="btn btn-primary">➕ Add Banner</a>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Preview</th>
+        <th>Title</th>
+        <th>Link</th>
+        <th>Order</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for banner in banners %}
+      <tr>
+        <td>
+          <img
+            src="{{ banner.image.url }}"
+            style="width: 140px; height: 58px; object-fit: cover; border-radius: 8px"
+          />
+        </td>
+        <td><strong>{{ banner.title|default:"—" }}</strong></td>
+        <td>
+          {% if banner.link_type == 'none' %}Shop{% else %}{{ banner.link_type|title }}: {{ banner.link_value }}{% endif %}
+        </td>
+        <td>{{ banner.sort_order }}</td>
+        <td>
+          {% if banner.is_active %}
+          <span class="badge badge-active">Active</span>
+          {% else %}
+          <span class="badge badge-inactive">Inactive</span>
+          {% endif %}
+        </td>
+        <td>
+          <div class="action-btns">
+            <a href="/shop-admin/banners/{{ banner.pk }}/edit/" class="btn-edit">Edit</a>
+            <a
+              href="/shop-admin/banners/{{ banner.pk }}/delete/"
+              class="btn-delete"
+              onclick="return confirm('Are you sure?');"
+              >Delete</a
+            >
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" class="empty-state">
+          <div class="icon">🖼️</div>
+          <p>
+            No banners yet.
+            <a href="/shop-admin/banners/add/">Add your first banner</a>
+          </p>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
